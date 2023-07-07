@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+  dev-db:
+    build: ./mongodb_rs/develop
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+      MONGO_INITDB_DATABASE: encuestasapidev
+      MONGO_REPLICA_HOST: localhost
+      MONGO_REPLICA_PORT: 27017
+    networks:
+      - nestbackend
+    ports:
+      - 27017:27017
+  test-db:
+    build: ./mongodb_rs/testing
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+      MONGO_INITDB_DATABASE: encuestasapitest
+      MONGO_REPLICA_HOST: localhost
+      MONGO_REPLICA_PORT: 27018
+    ports:
+      - 27018:27018
+
+networks:
+  nestbackend:
