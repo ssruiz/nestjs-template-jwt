@@ -6,40 +6,46 @@ import { hash, verify } from 'argon2';
 import { CreateAuthDto } from './dto/create-auth.dto';
 
 import { JWTPayload } from './interfaces/jwt-payload.interface';
-import { PrismaService } from '@/prisma/prisma.service';
+
+import { UserService } from '@/user/user.service';
+import { Prisma } from '@prisma/client';
+import { PrismaException } from '@/commons/exceptions/prisma.exceptions';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly prisma: PrismaService,
+    private readonly userService: UserService,
   ) {}
 
   async register(createAuthDto: CreateAuthDto) {
     const password = await this.hashPassword(createAuthDto.password);
 
     try {
-      const user = await this.prisma.user.create({
-        data: {
-          ...createAuthDto,
-          password,
-        },
+      const user = await this.userService.create({
+        ...createAuthDto,
+        password,
       });
 
       const payload: JWTPayload = { sub: user.id, ci: user.ci };
       return {
         access_token: await this.jwtService.signAsync(payload),
       };
-    } catch (error) {}
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        PrismaException.returnMessage(error, `Invalid credentials`);
+      }
+
+      throw error;
+    }
   }
 
-  async login({ ci, password }: CreateAuthDto) {
+  async login({
+    ci,
+    password,
+  }: CreateAuthDto): Promise<{ access_token: string }> {
     try {
-      const user = await this.prisma.user.findUnique({
-        where: {
-          ci,
-        },
-      });
+      const user = await this.userService.findByCi(ci);
 
       if (!user) throw new BadRequestException('Invalid credentials');
 
@@ -51,6 +57,9 @@ export class AuthService {
         access_token: await this.jwtService.signAsync(payload),
       };
     } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        PrismaException.returnMessage(error, `Invalid credentials`);
+      }
       throw error;
     }
   }

@@ -3,29 +3,47 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@/commons/prisma-models/user';
+import { Prisma, Role } from '@prisma/client';
+import { PrismaException } from '@/commons/exceptions/prisma.exceptions';
+import { ChangeRoleDto } from './dto/change-role.dto';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          ...createUserDto,
+        },
+      });
+
+      return user;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        PrismaException.returnMessage(error, `Invalid credentials`);
+      }
+      throw error;
+    }
   }
 
-  findAll() {
-    return this.prisma.user.findMany({
+  async findAll() {
+    return await this.prisma.user.findMany({
       select: {
         ci: true,
         fullname: true,
         isActive: true,
         id: true,
         role: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }
 
-  findOne(id: string) {
-    return this.prisma.user.findUnique({
+  async findOne(id: string) {
+    return await this.prisma.user.findUnique({
       where: {
         id,
       },
@@ -39,11 +57,55 @@ export class UserService {
     });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async findByCi(ci: string) {
+    return this.prisma.user.findUnique({
+      where: {
+        ci,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const userUpdate = await this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        ...updateUserDto,
+      },
+    });
+
+    return userUpdate;
+  }
+
+  async delete(id: string): Promise<User> {
+    return await this.prisma.user.delete({
+      where: { id },
+      select: {
+        isActive: true,
+        id: true,
+        fullname: true,
+        ci: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async changeRole(id: string, { role }: ChangeRoleDto) {
+    return await this.prisma.user.update({
+      where: { id },
+      data: {
+        role,
+      },
+      select: {
+        isActive: true,
+        id: true,
+        fullname: true,
+        ci: true,
+        role: true,
+      },
+    });
   }
 }

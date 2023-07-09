@@ -5,6 +5,7 @@ import { CommonsModule } from './commons/commons.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserModule } from './user/user.module';
     AuthModule,
     UserModule,
     PrismaModule,
+    SeedModule,
   ],
   controllers: [],
   providers: [],

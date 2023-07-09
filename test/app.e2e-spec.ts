@@ -4,9 +4,10 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import * as pactum from 'pactum';
 import { CreateAuthDto } from '@/auth/dto/create-auth.dto';
-let app: INestApplication;
-let prisma: PrismaService;
+
 describe('App e2e', () => {
+  let app: INestApplication;
+  let prisma: PrismaService;
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
@@ -29,6 +30,12 @@ describe('App e2e', () => {
   afterAll(async () => {
     console.log('Closing server');
     await app.close(); // <------------- THE PROBLEM ARISES HERE.
+  });
+
+  describe('Seed', () => {
+    it('should populate the db', () => {
+      return pactum.spec().get('/seed').expectStatus(200);
+    });
   });
 
   describe('Auth', () => {
@@ -61,6 +68,14 @@ describe('App e2e', () => {
           .post('/auth/register')
           .withBody(dto)
           .expectStatus(201);
+      });
+
+      it('should throw if the user already exists', () => {
+        return pactum
+          .spec()
+          .post('/auth/register')
+          .withBody(dto)
+          .expectStatus(400);
       });
     });
 

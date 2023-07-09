@@ -1,5 +1,6 @@
 import { Role } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional } from 'class-validator';
 
 export class User {
   @ApiProperty({ type: String })
@@ -18,5 +19,11 @@ export class User {
   role: Role = Role.USER;
 
   @ApiProperty({ type: Boolean })
-  isActive: boolean = true;
+  isActive = true;
+
+  @ApiProperty({ type: Date })
+  createdAt: Date;
+
+  @ApiProperty({ type: Date })
+  updatedAt: Date;
 }
