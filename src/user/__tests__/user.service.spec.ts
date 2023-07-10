@@ -5,6 +5,7 @@ import { UserService } from '@/user/user.service';
 
 import { PrismaService } from '@/prisma/prisma.service';
 import { Prisma, Role } from '@prisma/client';
+import { ResponseStatusDto } from '@/commons/dto/ResponseStatus.dto';
 
 describe('UserService', () => {
   let service: UserService;
@@ -88,7 +89,7 @@ describe('UserService', () => {
         { id: 1, ci: '1234' },
         { id: 1, ci: '1234' },
       ]);
-      const res = await service.findAll();
+      const res = await service.findAll({});
       expect(findManyMok).toBeCalled();
       expect(res).toEqual([
         { id: 1, ci: '1234' },
@@ -128,24 +129,13 @@ describe('UserService', () => {
   });
 
   describe('when the delete method is called', () => {
-    it('should return the user deleted', async () => {
-      const dateNome = new Date();
-      deleteMock.mockResolvedValue({
-        id: '124',
-        ci: '1234',
-        fullname: 'new Name',
-        createdAt: dateNome,
-        updatedAt: dateNome,
-      });
+    it('should return Response status dto', async () => {
+      const deleteResponse =
+        ResponseStatusDto.getNoContentResponse('Usuario eliminado');
+      deleteMock.mockResolvedValue(deleteResponse);
       const res = await service.delete('124');
       expect(deleteMock).toBeCalled();
-      expect(res).toEqual({
-        id: '124',
-        ci: '1234',
-        fullname: 'new Name',
-        createdAt: dateNome,
-        updatedAt: dateNome,
-      });
+      expect(res).toEqual(deleteResponse);
     });
   });
 

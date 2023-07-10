@@ -4,6 +4,7 @@ import { SeedService } from '../seed.service';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { SeedModule } from '../seed.module';
 import { PrismaService } from '@/prisma/prisma.service';
+import { ResponseStatusDto } from '@/commons/dto';
 
 describe('SeedController', () => {
   let controller: SeedController;
@@ -40,13 +41,17 @@ describe('SeedController', () => {
     countMok.mockResolvedValue(0);
 
     const rest = await controller.seedDB();
-    expect(rest).toEqual({ message: 'DB populated!' });
+    expect(rest).toEqual(
+      ResponseStatusDto.getNoContentResponse('DB populated!'),
+    );
   });
 
   it('should no populate if db has data already', async () => {
     countMok.mockResolvedValue(1);
 
     const rest = await controller.seedDB();
-    expect(rest).toEqual({ message: 'DB already populated' });
+    expect(rest).toEqual(
+      ResponseStatusDto.getNoContentResponse('DB already populated'),
+    );
   });
 });

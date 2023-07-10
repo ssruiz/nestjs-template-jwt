@@ -1,3 +1,4 @@
+import { ResponseStatusDto } from '@/commons/dto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable, NotImplementedException } from '@nestjs/common';
 
@@ -5,10 +6,12 @@ import { Injectable, NotImplementedException } from '@nestjs/common';
 export class SeedService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async seedDB() {
+  async seedDB(): Promise<ResponseStatusDto<null>> {
     const userCount = await this.prisma.user.count();
 
-    if (userCount > 0) return { message: 'DB already populated' };
+    if (userCount > 0)
+      return ResponseStatusDto.getNoContentResponse('DB already populated');
+
     // Insert Users: Role User and Admin
     await this.prisma.user.create({
       data: {
@@ -28,6 +31,6 @@ export class SeedService {
       },
     });
 
-    return { message: 'DB populated!' };
+    return ResponseStatusDto.getNoContentResponse('DB populated!');
   }
 }

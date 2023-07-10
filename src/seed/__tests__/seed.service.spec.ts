@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SeedService } from '../seed.service';
 
 import { PrismaService } from '@/prisma/prisma.service';
+import { ResponseStatusDto } from '@/commons/dto';
 
 describe('SeedService', () => {
   let service: SeedService;
@@ -39,7 +40,9 @@ describe('SeedService', () => {
         const res = await service.seedDB();
         expect(countMok).toBeCalled();
         expect(createMock).not.toBeCalled();
-        expect(res).toEqual({ message: 'DB already populated' });
+        expect(res).toEqual(
+          ResponseStatusDto.getNoContentResponse('DB already populated'),
+        );
       });
     });
 
@@ -49,7 +52,9 @@ describe('SeedService', () => {
         const res = await service.seedDB();
         expect(countMok).toBeCalled();
         expect(createMock).toBeCalled();
-        expect(res).toEqual({ message: 'DB populated!' });
+        expect(res).toEqual(
+          ResponseStatusDto.getNoContentResponse('DB populated!'),
+        );
       });
     });
   });

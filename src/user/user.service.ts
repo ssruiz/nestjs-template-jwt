@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpCode, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,6 +6,8 @@ import { User } from '@/commons/prisma-models/user';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaException } from '@/commons/exceptions/prisma.exceptions';
 import { ChangeRoleDto } from './dto/change-role.dto';
+import { ResponseStatusDto } from '@/commons/dto/ResponseStatus.dto';
+import { PaginationDto } from '@/commons/dto';
 
 @Injectable()
 export class UserService {
@@ -28,8 +30,10 @@ export class UserService {
     }
   }
 
-  async findAll() {
+  async findAll({ limit, offset }: PaginationDto) {
     return await this.prisma.user.findMany({
+      take: limit,
+      skip: offset,
       select: {
         ci: true,
         fullname: true,
@@ -78,8 +82,8 @@ export class UserService {
     return userUpdate;
   }
 
-  async delete(id: string): Promise<User> {
-    return await this.prisma.user.delete({
+  async delete(id: string): Promise<ResponseStatusDto<null>> {
+    await this.prisma.user.delete({
       where: { id },
       select: {
         isActive: true,
@@ -91,6 +95,8 @@ export class UserService {
         updatedAt: true,
       },
     });
+
+    return ResponseStatusDto.getNoContentResponse('Usuario eliminado');
   }
 
   async changeRole(id: string, { role }: ChangeRoleDto) {

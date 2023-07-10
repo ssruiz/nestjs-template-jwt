@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Role } from '@prisma/client';
 import { ChangeRoleDto } from '../dto/change-role.dto';
+import { ResponseStatusDto } from '@/commons/dto/ResponseStatus.dto';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -43,7 +44,7 @@ describe('UserController', () => {
         .spyOn(service, 'findAll')
         .mockImplementation(async () => [userStandarResponse]);
 
-      const res = await controller.findAll();
+      const res = await controller.findAll({});
       expect(res).toEqual([userStandarResponse]);
     });
   });
@@ -60,13 +61,15 @@ describe('UserController', () => {
   });
 
   describe('when the delete endpoint is called', () => {
-    it('should return the user', async () => {
+    it('should return Reponse Status Not Content', async () => {
+      const deleteResponse =
+        ResponseStatusDto.getNoContentResponse('Usuario Eliminado');
       jest
         .spyOn(service, 'delete')
-        .mockImplementation(async () => userStandarResponse);
+        .mockImplementation(async () => deleteResponse);
 
       const res = await controller.remove('1234');
-      expect(res).toEqual(userStandarResponse);
+      expect(res).toEqual(deleteResponse);
     });
   });
 
